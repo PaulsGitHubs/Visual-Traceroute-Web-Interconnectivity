@@ -1,0 +1,7 @@
+pandas==2.0.1
+geopandas==0.13.0
+shapely==2.0.1
+matplotlib==3.1.2
+PyQt5==5.12.8
+scapy==2.5.0
+IP2Location
