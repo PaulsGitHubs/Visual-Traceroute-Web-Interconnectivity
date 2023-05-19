@@ -33,6 +33,11 @@ class MyDynamicMplCanvas(FigureCanvas):
 
     def get_location(self, database, ip):
         ip_int = int(ipaddress.IPv4Address(ip))
+
+        # check if the IP address is private
+        if ipaddress.ip_address(ip).is_private:
+            return self.get_user_location()  # Return user location if IP is private
+ 
         if isinstance(database, pd.DataFrame):
             loc = database[(database['ip_from'].apply(int) <= ip_int) & (database['ip_to'].apply(int) >= ip_int)]
             if not loc.empty:
@@ -42,6 +47,7 @@ class MyDynamicMplCanvas(FigureCanvas):
             if loc:
                 return loc.latitude, loc.longitude
         return self.get_user_location()  # Return user location if IP location not found
+
 
     def get_pcap_data(self, filepath):
         try:
@@ -59,7 +65,23 @@ class MyDynamicMplCanvas(FigureCanvas):
                 except:
                     continue
         return pd.DataFrame(data)
-
+        
+    # New method for loading CSV data
+    def get_csv_data(self, filepath):
+        try:
+            df = pd.read_csv(filepath)
+        except Exception as e:
+            print(f"Warning: Error reading file {filepath}. Message: {str(e)}")
+            return pd.DataFrame()
+        data = []
+        for _, row in df.iterrows():
+            try:
+                src_ip = row['Source IP']
+                dst_ip = row['Destination IP']
+                data.append({'Source IP': src_ip, 'Destination IP': dst_ip})
+            except:
+                continue
+        return pd.DataFrame(data)
     def plot_label(self, x, y, label):
         try:
             x = float(x)
@@ -67,7 +89,7 @@ class MyDynamicMplCanvas(FigureCanvas):
             self.axes.text(x, y, label, fontsize=8, ha='right')
         except Exception as e:
             print(f"Warning: Could not plot label '{label}' at ({x},{y}). Error: {str(e)}")
-
+            
     def plot(self, ip2location_file, packets_dir):
         self.axes.clear()
 
@@ -77,33 +99,42 @@ class MyDynamicMplCanvas(FigureCanvas):
             column_names = ['ip_from', 'ip_to', 'country_code', 'country_name', 'region_name', 'city_name', 'latitude',
                             'longitude', 'zip_code', 'time_zone']
             database = pd.read_csv(ip2location_file, delimiter=",", names=column_names, index_col=False)
+        
+        #this one loads faster
+        #world = gpd.read_file('https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries.zip')
+        world = gpd.read_file('https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_0_countries.zip')
 
-        world = gpd.read_file('https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries.zip')
         world.plot(ax=self.axes, color='white', edgecolor='black')
 
         for filename in os.listdir(packets_dir):
             if filename.endswith(".pcap"):
                 filepath = os.path.join(packets_dir, filename)
                 df = self.get_pcap_data(filepath)
-                for _, row in df.iterrows():
-                    src_ip = row['Source IP']
-                    dst_ip = row['Destination IP']
+            elif filename.endswith(".csv"):
+                filepath = os.path.join(packets_dir, filename)
+                df = self.get_csv_data(filepath)
+            else:
+                continue
 
-                    src_loc = self.get_location(database, src_ip)
-                    dst_loc = self.get_location(database, dst_ip)
+            for _, row in df.iterrows():
+                src_ip = row['Source IP']
+                dst_ip = row['Destination IP']
 
-                    if src_loc[0] is not None and dst_loc[0] is not None:
-                        src_point = Point(src_loc[1], src_loc[0])  # lon, lat
-                        dst_point = Point(dst_loc[1], dst_loc[0])
+                src_loc = self.get_location(database, src_ip)
+                dst_loc = self.get_location(database, dst_ip)
 
-                        line = LineString([src_point, dst_point])
-                        self.axes.plot(*line.xy, color='green', linewidth=0.5)  # line from source to destination
+                if src_loc[0] is not None and dst_loc[0] is not None:
+                    src_point = Point(src_loc[1], src_loc[0])  # lon, lat
+                    dst_point = Point(dst_loc[1], dst_loc[0])
 
-                        self.axes.plot(*src_point.xy, color='red', markersize=5)  # source point
-                        self.plot_label(src_loc[1], src_loc[0], src_ip)
+                    line = LineString([src_point, dst_point])
+                    self.axes.plot(*line.xy, color='green', linewidth=0.5)  # line from source to destination
 
-                        self.axes.plot(*dst_point.xy, color='blue', markersize=5)  # destination point
-                        self.plot_label(float(dst_loc[1]), float(dst_loc[0]), dst_ip)
+                    self.axes.plot(*src_point.xy, color='red', markersize=5)  # source point
+                    self.plot_label(src_loc[1], src_loc[0], src_ip)
+
+                    self.axes.plot(*dst_point.xy, color='blue', markersize=5)  # destination point
+                    self.plot_label(float(dst_loc[1]), float(dst_loc[0]), dst_ip)
 
         self.axes.figure.canvas.draw()
 
@@ -117,20 +148,24 @@ class ApplicationWindow(QWidget):
         layout.addWidget(self.canvas)
         self.setLayout(layout)
 
-        self.button_select_files = QPushButton("Select Files", self)
+        self.button_select_files = QPushButton("Select IP2Location File", self)
         self.button_select_files.clicked.connect(self.select_files)
         layout.addWidget(self.button_select_files)
 
         self.button_set_location = QPushButton("Set My Location", self)
         self.button_set_location.clicked.connect(self.set_location)
         layout.addWidget(self.button_set_location)
+        
+        self.button_select_files = QPushButton("Select PCAP or CSV Directory", self)  # Rename button
+        self.button_select_files.clicked.connect(self.select_files)
+        layout.addWidget(self.button_select_files)
 
         # load last paths
         self.ip2location_path, self.packets_path = self.load_last_paths()
 
     def select_files(self):
         ip2location_file, _ = QFileDialog.getOpenFileName(self, 'Open IP2Location file', self.ip2location_path)
-        packets_dir = QFileDialog.getExistingDirectory(self, 'Open Directory containing pcap files', self.packets_path)
+        packets_dir = QFileDialog.getExistingDirectory(self, 'Open PCAP or CSV Directory', self.packets_path)  # Change here
         if ip2location_file and packets_dir:
             self.canvas.plot(ip2location_file, packets_dir)
             self.save_last_paths(ip2location_file, packets_dir)
