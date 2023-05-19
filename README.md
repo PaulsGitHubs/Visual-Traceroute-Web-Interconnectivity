@@ -8,9 +8,9 @@ Our tool is designed to work in tandem with an internet packet sniffing tool, al
 
 ## Features
 
-- **Traceroute Visualization**: Uncover the path that your data takes through the internet. See the servers that your data passes through before it reaches its destination.
-- **Packet Sniffing**: Works hand-in-hand with packet sniffing tools to provide a detailed analysis of data packets being sent and received by your computer.
-- **Data Flow Mapping**: Understand where your data is coming from and where it's going, promoting transparency and security.
+- **Traceroute Visualization**: This feature provides a graphical representation of the path your data takes when traveling through the internet. It offers insights into the servers your data interacts with en route to its destination.
+- **Packet Sniffing**: In collaboration with packet sniffing tools, our application delivers a comprehensive analysis of data packets transferred by your computer, providing an in-depth look into the structure of your data.
+- **Data Flow Mapping**: Our tool facilitates a better understanding of the origin and destination of your data, promoting transparency and fostering a more secure internet experience.
 ![Screenshot from 2023-05-18 20-06-10](https://github.com/PaulsGitHubs/Visual-Traceroute-Web-Interconnectivity/assets/102178068/81e35d4a-8294-4289-b0a5-b73fadffedfb)
 
 ## Getting Started
@@ -20,17 +20,36 @@ To get started with our project, follow these steps:
 1. **Step 1**: Clone the repository to your local machine.
 
     ```bash
-    git clone https://github.com/username/projectname.git
+    git clone https://github.com/PaulsGitHubs/Visual-Traceroute-Web-Interconnectivity.git
     ```
 
-2. **Step 2**: Navigate to the project directory.
+2. **Step 2**: Install Dependencies
 
     ```bash
-    cd projectname
+    pip install -r requirements.txt
     ```
 
-3. **Step 3**: Follow the installation and usage instructions outlined in the respective sections below.
+3. **Step 3**: Navigate to the project directory.
 
+    ```bash
+    cd Visual-Traceroute-Web-Interconnectivity
+    ```
+
+4. **Step 4**: Run packet_sweep.py
+    ```bash
+    sudo su
+    ```
+    ```bash
+    python3 packet_sweep.py
+    ```
+
+5. **Step 5**: Run map.py
+    ```bash
+    sudo su
+    ```
+    ```bash
+    python3 map.py
+    ```
 ## Installation
 
 (Provide detailed instructions for installing the project)
