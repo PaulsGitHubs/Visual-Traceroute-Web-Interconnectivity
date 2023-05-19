@@ -60,6 +60,14 @@ class MyDynamicMplCanvas(FigureCanvas):
                     continue
         return pd.DataFrame(data)
 
+    def plot_label(self, x, y, label):
+        try:
+            x = float(x)
+            y = float(y)
+            self.axes.text(x, y, label, fontsize=8, ha='right')
+        except Exception as e:
+            print(f"Warning: Could not plot label '{label}' at ({x},{y}). Error: {str(e)}")
+
     def plot(self, ip2location_file, packets_dir):
         self.axes.clear()
 
@@ -84,7 +92,7 @@ class MyDynamicMplCanvas(FigureCanvas):
                     src_loc = self.get_location(database, src_ip)
                     dst_loc = self.get_location(database, dst_ip)
 
-                    if src_loc is not None and dst_loc is not None:
+                    if src_loc[0] is not None and dst_loc[0] is not None:
                         src_point = Point(src_loc[1], src_loc[0])  # lon, lat
                         dst_point = Point(dst_loc[1], dst_loc[0])
 
@@ -92,10 +100,10 @@ class MyDynamicMplCanvas(FigureCanvas):
                         self.axes.plot(*line.xy, color='green', linewidth=0.5)  # line from source to destination
 
                         self.axes.plot(*src_point.xy, color='red', markersize=5)  # source point
+                        self.plot_label(src_loc[1], src_loc[0], src_ip)
+
                         self.axes.plot(*dst_point.xy, color='blue', markersize=5)  # destination point
-                    else:
-                        self.axes.plot(0, 0, 'o', color='black', markersize=5)  # plot NONE point at (0,0)
-                        self.axes.text(0, 0, 'NONE')
+                        self.plot_label(float(dst_loc[1]), float(dst_loc[0]), dst_ip)
 
         self.axes.figure.canvas.draw()
 
