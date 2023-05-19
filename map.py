@@ -5,6 +5,7 @@ from shapely.geometry import Point, LineString
 import IP2Location
 import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QFileDialog, QPushButton, QInputDialog
+from PyQt5.QtCore import pyqtSignal
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import ipaddress
@@ -13,21 +14,26 @@ from scapy.layers.inet import IP
 from scapy.error import Scapy_Exception
 
 class MyDynamicMplCanvas(FigureCanvas):
-    def __init__(self, parent, lat=None, lon=None, *args, **kwargs):
+    def __init__(self, parent=None, lat=0, lon=0, *args, **kwargs):
         fig = Figure(figsize=(10, 10))
         self.axes = fig.add_subplot(111)
         self.parent = parent  # reference to parent to use parent's methods
+        self.ip2location_path = None
+        self.packets_dir = None
 
         self.user_loc = (lat, lon)  # User location
 
         FigureCanvas.__init__(self, fig)
         self.setParent(None)
 
-    # method to get user's location
     def set_user_location(self, lat, lon):
         self.user_loc = (lat, lon)
+        if self.ip2location_path is None or self.packets_dir is None:
+            self.plot(None, None)  # replot with updated location
+        elif self.ip2location_path and self.packets_dir:
+            self.plot(self.ip2location_path, self.packets_dir)  # replot with updated location
 
-    # method to retrieve user's location
+
     def get_user_location(self):
         return self.user_loc
 
@@ -92,7 +98,9 @@ class MyDynamicMplCanvas(FigureCanvas):
             
     def plot(self, ip2location_file, packets_dir):
         self.axes.clear()
-
+        if ip2location_file is None or packets_dir is None:
+            self.axes.figure.canvas.draw()
+            return
         if ip2location_file.endswith('.BIN') or ip2location_file.endswith('.bin'):
             database = IP2Location.IP2Location(ip2location_file)
         else:  # assume it's CSV
@@ -148,15 +156,11 @@ class ApplicationWindow(QWidget):
         layout.addWidget(self.canvas)
         self.setLayout(layout)
 
-        self.button_select_files = QPushButton("Select IP2Location File", self)
-        self.button_select_files.clicked.connect(self.select_files)
-        layout.addWidget(self.button_select_files)
-
         self.button_set_location = QPushButton("Set My Location", self)
         self.button_set_location.clicked.connect(self.set_location)
         layout.addWidget(self.button_set_location)
         
-        self.button_select_files = QPushButton("Select PCAP or CSV Directory", self)  # Rename button
+        self.button_select_files = QPushButton("Select IPLocation and PCAP or CSV Directory", self)  # Rename button
         self.button_select_files.clicked.connect(self.select_files)
         layout.addWidget(self.button_select_files)
 
@@ -175,6 +179,8 @@ class ApplicationWindow(QWidget):
         lon, ok2 = QInputDialog.getDouble(self, 'Set Longitude', 'Longitude:')
         if ok1 and ok2:
             self.canvas.set_user_location(lat, lon)
+            self.canvas.plot(self.ip2location_path, self.packets_path)  # refresh plot with new user location
+
 
     def load_last_paths(self):
         if os.path.exists('last_paths.txt'):
