@@ -58,6 +58,10 @@ This project is licensed under the [MIT License](./LICENSE).
 
 If you have any questions, issues, or suggestions, feel free to open an issue, or contact us directly at `your_email@example.com`.
 
+## Future Work
+
+This uses Scapy for packet capture and is not optimized for speed, I think it would be good to optimize for speed... 
+
 ## REFERENCES
 
 This site or product includes IP2Location LITE data available from <a href="https://lite.ip2location.com">https://lite.ip2location.com</a>.
