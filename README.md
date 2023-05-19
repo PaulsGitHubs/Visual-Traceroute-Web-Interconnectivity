@@ -82,7 +82,9 @@ This project is licensed under the [MIT License](./LICENSE).
 
 If you have any questions, issues, or suggestions, feel free to open an issue, or contact us directly at `your_email@example.com`.
 
-## Future Work
+## Future Work and NOTES
+
+Only got it to work with .bin IPLocation files for now which are included in the repo... tried to get it to work for csv version as well but it is slower...
 
 This uses Scapy for packet capture and is not optimized for speed, I think it would be good to optimize for speed... 
 
