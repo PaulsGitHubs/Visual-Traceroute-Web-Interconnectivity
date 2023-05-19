@@ -26,7 +26,7 @@ To get started with our project, follow these steps:
 2. **Step 2**: Install Dependencies
 
     ```bash
-    pip install -r requirements.txt
+    pip3 install -r requirements.txt
     ```
 
 3. **Step 3**: Navigate to the project directory.
@@ -35,9 +35,13 @@ To get started with our project, follow these steps:
     cd Visual-Traceroute-Web-Interconnectivity
     ```
 
-4. **Step 4**: Run packet_sweep.py
+4. **Step 4**: Run packet_sweep.py (you need super-user root access and you might have to install the package again after you are inside root)
+
     ```bash
     sudo su
+    ```
+    ```bash
+    pip3 install scapy
     ```
     ```bash
     python3 packet_sweep.py
