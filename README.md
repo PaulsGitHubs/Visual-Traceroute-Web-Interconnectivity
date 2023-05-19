@@ -11,6 +11,7 @@ Our tool is designed to work in tandem with an internet packet sniffing tool, al
 - **Traceroute Visualization**: Uncover the path that your data takes through the internet. See the servers that your data passes through before it reaches its destination.
 - **Packet Sniffing**: Works hand-in-hand with packet sniffing tools to provide a detailed analysis of data packets being sent and received by your computer.
 - **Data Flow Mapping**: Understand where your data is coming from and where it's going, promoting transparency and security.
+![Screenshot from 2023-05-18 20-06-10](https://github.com/PaulsGitHubs/Visual-Traceroute-Web-Interconnectivity/assets/102178068/81e35d4a-8294-4289-b0a5-b73fadffedfb)
 
 ## Getting Started
 
