@@ -1,4 +1,5 @@
 # Visual-Traceroute-Web-Interconnectivity
+This is a simple traceroute using Matplotlib.
 
 ## Overview
 
